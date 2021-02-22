@@ -1,39 +1,60 @@
-import { RTCPeerConnection, RtpPacket } from "werift";
-import * as yargs from "yargs";
+import { RTCPeerConnection, RtpPacket, RtpHeader } from "werift";
 import axios from "axios";
 import { createSocket } from "dgram";
 
-// sender
-// ffmpeg -re -f lavfi -i testsrc=size=640x480:rate=30 -vcodec libvpx -keyint_min 30 -cpu-used 5 -deadline 1 -g 10 -error-resilient 1 -auto-alt-ref 1 -f rtp rtp://127.0.0.1:5000
+console.log("argv", process.argv);
 
-// receiver
-// gst-launch-1.0 -v udpsrc port=4002 caps = "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)VP8, payload=(int)97" ! rtpvp8depay ! decodebin ! videoconvert ! autovideosink
-
-const args = yargs.option("url", { default: "http://localhost:8080" }).help()
-  .argv;
+const url = process.argv[2] || "http://localhost:8080/offer";
 
 const udp = createSocket("udp4");
 udp.bind(5000);
 
-(async () => {
+new Promise<void>(async (r, f) => {
   const pc = new RTCPeerConnection({
     iceConfig: { stunServer: ["stun.l.google.com", 19302] },
   });
   const transceiver = pc.addTransceiver("video", "sendrecv");
   transceiver.onTrack.once((track) => {
     track.onRtp.subscribe((rtp) => {
-      udp.send(rtp.serialize(), 4002, "127.0.0.1");
+      r();
     });
   });
 
   await pc.setLocalDescription(pc.createOffer());
-  const { data } = await axios.post(args.url + "/offer", pc.localDescription);
+  const { data } = await axios.post(url, pc.localDescription);
   pc.setRemoteDescription(data);
 
   await transceiver.sender.onReady.asPromise();
-  udp.on("message", (data) => {
-    const rtp = RtpPacket.deSerialize(data);
-    rtp.header.payloadType = pc.configuration.codecs.video![0].payloadType!;
+
+  setInterval(() => {
+    let sequenceNumber = 0;
+    let timestamp = 0;
+    const header = new RtpHeader({
+      sequenceNumber: sequenceNumber++,
+      timestamp: timestamp++,
+      payloadType: pc.configuration.codecs.video![0].payloadType!,
+      extension: false,
+      marker: true,
+      padding: false,
+    });
+    const rtp = new RtpPacket(
+      header,
+      Buffer.from(
+        '\x90\x80\xd2\xa5\xd0C\x00\x9d\x01*\x80\x02\xe0\x019[\x00!\x1c"\x16\x16"f\x12 \xb4\x08\t\xd6\xa8\x0f\xe0\x08\x1a\x1a\x15\xa1\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x97\xa5\xdd!\x92\xb2\xe4\x90\xbc\xbd.\xe9\x0c\x95\x97$\x85\xe5\xe9wHd\xac\xb9$//K\xbaC%e\xc9!yz]\xd2\x19+.I\x0b\xcb\xd2\xee\x90\xc9YrH^^\x97t\x86J\xcb\x92B\xf2\xf4\xbb\xa42V\\\x92\x17\x970\x00\xfe\xefv\xd7\xfe,\xe4b;<\xdf\xfcY\xc8\xc4v^\x00'
+      )
+    );
     transceiver.sendRtp(rtp);
+  }, 100);
+
+  setTimeout(() => {
+    f();
+  }, 30_000);
+})
+  .then(() => {
+    console.log("done");
+    process.exit(0);
+  })
+  .catch(() => {
+    console.log("failed");
+    process.exit(1);
   });
-})();

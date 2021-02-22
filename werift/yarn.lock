@@ -1320,10 +1320,10 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
 
-werift@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/werift/-/werift-0.5.0.tgz#9abbf66e5d8d01d5b499130833b6eda39b2de89a"
-  integrity sha512-u9cTyucZPYfTgk/ypoKQTUaYdAZ2lwS/bpxQPtaRDJ3/oGTH5SxNya6pEDNIFmOC+V33vuAa4vFnuEiv1LxyUA==
+werift@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/werift/-/werift-0.5.1.tgz#b7a64384b3ee1aa923176ff1a942a2eebd3cfbdc"
+  integrity sha512-fRkRdK6e+I1MniVWJo+7UB2LW0NG8/RKzidexY5r/PZP42LfwpdTOCVu2AZmKEE2VwfHTsMBElqaSZIC9JXc/g==
   dependencies:
     "@fidm/x509" "^1.2.1"
     aes-js "^3.1.2"
