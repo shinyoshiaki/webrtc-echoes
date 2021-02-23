@@ -20,8 +20,8 @@ jobs:
       - name: Build ${{ matrix.library }} and push to GitHub container registry.
         run: |
           echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-          docker build -t ghcr.io/sipsorcery/${{ matrix.library }}-webrtc-echo -f ${{ matrix.library }}/Dockerfile .
-          docker push ghcr.io/sipsorcery/${{ matrix.library }}-webrtc-echo
+          docker build -t ghcr.io/shinyoshiaki/${{ matrix.library }}-webrtc-echo -f ${{ matrix.library }}/Dockerfile .
+          docker push ghcr.io/shinyoshiaki/${{ matrix.library }}-webrtc-echo
       - name: List docker images (diagnostics).
         run: docker image ls
 
@@ -35,7 +35,7 @@ jobs:
     needs: [build-docker-images]
     services:
       echo-test-server:
-        image: ghcr.io/sipsorcery/${{ matrix.server }}-webrtc-echo
+        image: ghcr.io/shinyoshiaki/${{ matrix.server }}-webrtc-echo
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
@@ -47,7 +47,7 @@ jobs:
       - name: Peer connection test for server ${{ matrix.server }} and ${{ matrix.client }} client
         id: check_connection
         run: |
-          docker run --entrypoint "/client.sh" --network ${{ job.container.network }} ghcr.io/sipsorcery/${{ matrix.client }}-webrtc-echo http://echo-server:8080/offer
+          docker run --entrypoint "/client.sh" --network ${{ job.container.network }} ghcr.io/shinyoshiaki/${{ matrix.client }}-webrtc-echo http://echo-server:8080/offer
           result=$?
           echo "Check connection for ${{ matrix.server }} server and ${{ matrix.client }} client result $result."
           echo "::set-output name=TEST_RESULT::$result"
