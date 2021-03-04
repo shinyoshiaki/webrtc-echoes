@@ -1,5 +1,5 @@
 ## Echo Test Interoperability Results
-Test run at 2021-03-04 09:48:19.505855
+Test run at 2021-03-04 10:40:55.112642
 
 | Server      | Client      |             |             |
 |-------------|-------------|-------------|-------------|
