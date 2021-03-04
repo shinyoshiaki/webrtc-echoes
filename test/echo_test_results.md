@@ -1,10 +1,10 @@
 ## Echo Test Interoperability Results
-Test run at 2021-02-25 10:57:50.671551
+Test run at 2021-03-04 09:37:27.937789
 
 | Server      | Client      |             |             |
 |-------------|-------------|-------------|-------------|
-|             | aiortc      | sipsorcery  | werift      |
-| werift      | &#9745;     | &#9745;     | &#9745;     |
-| pion        | &#9745;     | &#9745;     | &#9745;     |
-| aiortc      | &#9745;     | &#9745;     | &#9745;     |
-| sipsorcery  | &#9745;     | &#9745;     | &#9745;     |
+|             | aiortc      | werift      | sipsorcery  |
+| pion        | &#x2612;    | &#x2612;    | &#x2612;    |
+| sipsorcery  | &#x2612;    | &#x2612;    | &#9745;     |
+| aiortc      | &#9745;     | &#x2612;    | &#x2612;    |
+| werift      | &#x2612;    | &#9745;     | &#x2612;    |
