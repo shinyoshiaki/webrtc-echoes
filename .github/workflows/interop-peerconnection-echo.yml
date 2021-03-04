@@ -53,6 +53,7 @@ jobs:
       - name: Peer connection test for server ${{ matrix.server }} and ${{ matrix.client }} client
         id: check_connection
         run: |
+          echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u shinyoshiaki --password-stdin
           docker run --entrypoint "/client.sh" --network ${{ job.container.network }} ghcr.io/shinyoshiaki/${{ matrix.client }}-webrtc-echo http://echo-server:8080/offer
           result=$?
           echo "Check connection for ${{ matrix.server }} server and ${{ matrix.client }} client result $result."
