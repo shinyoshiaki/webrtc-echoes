@@ -1,13 +1,20 @@
-import { RTCPeerConnection } from "werift";
+import { RTCPeerConnection, RtpPacket } from "werift";
 import axios from "axios";
 import { createSocket } from "dgram";
+import { exec } from "child_process";
 
 const url = process.argv[2] || "http://localhost:8080/offer";
 
 const udp = createSocket("udp4");
 udp.bind(5000);
 
-new Promise<any>(async (r, f) => {
+exec(
+  "ffmpeg -re -f lavfi -i testsrc=size=640x480:rate=30 -vcodec libvpx -keyint_min 30 -cpu-used 5 -deadline 1 -g 10 -error-resilient 1 -auto-alt-ref 1 -f rtp rtp://127.0.0.1:5000"
+);
+
+console.log("start");
+
+new Promise<void>(async (r, f) => {
   setTimeout(() => {
     f();
   }, 30_000);
@@ -15,7 +22,13 @@ new Promise<any>(async (r, f) => {
   const pc = new RTCPeerConnection({
     iceConfig: { stunServer: ["stun.l.google.com", 19302] },
   });
-  pc.addTransceiver("video", "sendrecv");
+  const transceiver = pc.addTransceiver("video", "sendrecv");
+  transceiver.onTrack.once((track) => {
+    track.onRtp.subscribe((rtp) => {
+      console.log(rtp.header);
+      r();
+    });
+  });
 
   await pc.setLocalDescription(await pc.createOffer()).catch((e) => f(e));
   const { data } = await axios.post(url, pc.localDescription).catch((e) => {
@@ -24,7 +37,13 @@ new Promise<any>(async (r, f) => {
   });
   pc.setRemoteDescription(data).catch((e) => f(e));
 
-  pc.connectionStateChange.watch((state) => state === "connected").then(r);
+  await pc.connectionStateChange.watch((state) => state === "connected");
+  udp.on("message", (data) => {
+    const rtp = RtpPacket.deSerialize(data);
+    rtp.header.payloadType = pc.configuration.codecs.video![0].payloadType;
+    transceiver.sendRtp(rtp);
+  });
+  r;
 })
   .then(() => {
     console.log("done");
