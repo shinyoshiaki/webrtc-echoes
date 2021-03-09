@@ -8,12 +8,6 @@ const url = process.argv[2] || "http://localhost:8080/offer";
 const udp = createSocket("udp4");
 udp.bind(5000);
 
-exec(
-  "ffmpeg -re -f lavfi -i testsrc=size=640x480:rate=30 -vcodec libvpx -keyint_min 30 -cpu-used 5 -deadline 1 -g 10 -error-resilient 1 -auto-alt-ref 1 -f rtp rtp://127.0.0.1:5000"
-);
-
-console.log("start");
-
 new Promise<void>(async (r, f) => {
   setTimeout(() => {
     f();
@@ -43,6 +37,10 @@ new Promise<void>(async (r, f) => {
     rtp.header.payloadType = transceiver.codecs[0].payloadType;
     transceiver.sendRtp(rtp);
   });
+
+  exec(
+    "ffmpeg -re -f lavfi -i testsrc=size=640x480:rate=30 -vcodec libvpx -keyint_min 30 -f rtp rtp://127.0.0.1:5000"
+  );
 })
   .then(() => {
     console.log("done");
