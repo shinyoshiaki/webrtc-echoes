@@ -40,10 +40,9 @@ new Promise<void>(async (r, f) => {
   await pc.connectionStateChange.watch((state) => state === "connected");
   udp.on("message", (data) => {
     const rtp = RtpPacket.deSerialize(data);
-    rtp.header.payloadType = pc.configuration.codecs.video![0].payloadType;
+    rtp.header.payloadType = transceiver.codecs[0].payloadType;
     transceiver.sendRtp(rtp);
   });
-  r;
 })
   .then(() => {
     console.log("done");
