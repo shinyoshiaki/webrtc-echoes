@@ -39,7 +39,7 @@ new Promise<void>(async (r, f) => {
   });
 
   exec(
-    "ffmpeg -re -f lavfi -i testsrc=size=640x480:rate=30 -vcodec libvpx -keyint_min 30 -f rtp rtp://127.0.0.1:5000"
+    "gst-launch-1.0 videotestsrc ! video/x-raw,width=640,height=480,format=I420 ! vp8enc error-resilient=partitions keyframe-max-dist=10 auto-alt-ref=true cpu-used=5 deadline=1 ! rtpvp8pay ! udpsink host=127.0.0.1 port=5000"
   );
 })
   .then(() => {
