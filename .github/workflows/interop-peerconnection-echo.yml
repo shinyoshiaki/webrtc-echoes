@@ -50,7 +50,7 @@ jobs:
     needs: [build-docker-images]
     services:
       echo-test-server:
-        image: ghcr.io/shinyoshiaki/${{ matrix.server }}-webrtc-echo
+        image: ghcr.io/sipsorcery/${{ matrix.server }}-webrtc-echo
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
