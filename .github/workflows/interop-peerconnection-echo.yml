@@ -36,7 +36,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        server: ["sipsorcery", "aiortc", "werift", "pion"]
+        server:
+          [
+            "sipsorcery",
+            "aiortc",
+            "werift",
+            "pion",
+            "gstreamer",
+            "libwebrtc",
+            "kurento",
+          ]
         client: ["sipsorcery", "aiortc", "werift", "pion"]
     needs: [build-docker-images]
     services:
