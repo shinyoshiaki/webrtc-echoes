@@ -18,6 +18,8 @@ const args = yargs
   .option("static", {})
   .help().argv;
 
+console.log(args);
+
 const app = express();
 app.use(express.json());
 if (args["cert-file"] && args["key-file"]) {
@@ -37,15 +39,17 @@ app.use(express.static((args.static as string) || "../html"));
 
 app.post("/offer", async (req, res) => {
   const offer = req.body;
+  console.log("offer", offer);
 
   const pc = new RTCPeerConnection({
-    iceConfig: { stunServer: ["stun.l.google.com", 19302] },
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
   pc.onTransceiver.subscribe(async (transceiver) => {
     const [track] = await transceiver.onTrack.asPromise();
-    track.onRtp.subscribe((rtp) => {
-      transceiver.sendRtp(rtp);
-    });
+    pc.addTrack(track);
+  });
+  pc.onDataChannel.subscribe((dc) => {
+    dc.message.subscribe((msg) => dc.send(msg));
   });
 
   await pc.setRemoteDescription(offer);

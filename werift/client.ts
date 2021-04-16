@@ -1,7 +1,10 @@
-import { RTCPeerConnection, RtpPacket } from "werift";
+import { MediaStreamTrack, RTCPeerConnection, RtpPacket } from "werift";
 import axios from "axios";
 import { createSocket } from "dgram";
 import { exec } from "child_process";
+import debug from "debug";
+
+const log = debug("werift/interop");
 
 const url = process.argv[2] || "http://localhost:8080/offer";
 
@@ -11,15 +14,17 @@ udp.bind(5000);
 new Promise<void>(async (r, f) => {
   setTimeout(() => {
     f();
-  }, 30_000);
+  }, 60_000);
 
   const pc = new RTCPeerConnection({
-    iceConfig: { stunServer: ["stun.l.google.com", 19302] },
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
-  const transceiver = pc.addTransceiver("video", "sendrecv");
+  const senderTrack = new MediaStreamTrack({ kind: "video" });
+  const transceiver = pc.addTransceiver(senderTrack);
   transceiver.onTrack.once((track) => {
-    track.onRtp.subscribe((rtp) => {
-      console.log(rtp.header);
+    track.onReceiveRtp.subscribe((rtp) => {
+      log(rtp.header);
+      log("Received echoed back rtp");
       r();
     });
   });
@@ -29,11 +34,12 @@ new Promise<void>(async (r, f) => {
     f(e);
     throw e;
   });
-  console.log("server answer sdp", data?.sdp);
+  log("server answer sdp", data?.sdp);
   pc.setRemoteDescription(data).catch((e) => f(e));
 
   await pc.connectionStateChange.watch((state) => state === "connected");
   if (transceiver.receiver.tracks.length === 0) {
+    log("remoteTrack not found");
     r();
     return;
   }
@@ -45,7 +51,7 @@ new Promise<void>(async (r, f) => {
   udp.on("message", (data) => {
     const rtp = RtpPacket.deSerialize(data);
     rtp.header.payloadType = payloadType;
-    transceiver.sendRtp(rtp);
+    senderTrack.writeRtp(rtp);
   });
 
   exec(
@@ -53,10 +59,10 @@ new Promise<void>(async (r, f) => {
   );
 })
   .then(() => {
-    console.log("done");
+    log("done");
     process.exit(0);
   })
   .catch((e) => {
-    console.log("failed", e);
+    log("failed", e);
     process.exit(1);
   });
